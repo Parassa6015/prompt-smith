@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+*.pyc
+__pycache__/
+
+# Node
+frontend/node_modules/
+dist/
+
+# Environment
+.env
+*.env
+
+# PostgreSQL data
+postgres/data/
+
+# VS Code / Mac files
+.DS_Store
+.vscode/
+
+# Logs
+*.log
