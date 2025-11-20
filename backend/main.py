@@ -3,6 +3,9 @@ from utils.db import get_connection
 from pydantic import BaseModel
 from utils.sql_executor import run_sql
 from utils.correctness import compare_results
+from services.llm_service import rewrite_sql_pipeline
+from services.instruction_search import find_best_instruction
+
 
 app = FastAPI()
 
@@ -44,4 +47,18 @@ def check_correctness(payload: SQLPair):
         "rewritten": rewritten_res,
         "comparison": comparison
     }
+
+class RewriteRequest(BaseModel):
+    query: str
+
+@app.post("/rewrite-sql")
+def rewrite_sql(payload: RewriteRequest):
+    return rewrite_sql_pipeline(payload.query)
+
+class SearchRequest(BaseModel):
+    query: str
+
+@app.post("/instruction-search")
+def instruction_search(payload: SearchRequest):
+    return find_best_instruction("sqlcoder", payload.query)
 
