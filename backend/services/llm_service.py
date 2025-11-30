@@ -2,8 +2,8 @@ import ollama
 from utils.sql_executor import run_sql
 from utils.correctness import compare_results
 
-PRIMARY_MODEL = "sqlcoder"
-FALLBACK_MODEL = "llama3.2:3b"
+PRIMARY_MODEL = "sqlcoder:15b"
+FALLBACK_MODEL = "llama3:8b"
 
 DEFAULT_INSTRUCTION = (
     "Rewrite the SQL to improve performance while keeping results identical. "
@@ -33,6 +33,7 @@ Query:
             model=model,
             prompt=prompt
         )
+        print("Using model:", model)
         return response["response"].strip()
     except Exception as e:
         return f"ERROR: {str(e)}"

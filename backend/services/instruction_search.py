@@ -13,35 +13,60 @@ INSTRUCTIONS = [
     "Rewrite the SQL with strict alias preservation and no aggregate simplification."
 ]
 
+
+def clean_sql(text: str) -> str:
+    """Remove markdown, tags, and junk tokens that break SQL execution."""
+    if not text:
+        return ""
+
+    bad_prefixes = ["```", "```sql", "<s>", "</s>", "Optimized Query:", "Efficient Query:", "\"\"\"", "EOF:"]
+    clean = text.strip()
+
+    for bad in bad_prefixes:
+        clean = clean.replace(bad, "")
+
+    # Remove trailing semicolons duplicates
+    clean = clean.replace(";;", ";")
+
+    return clean.strip()
+
+
 def test_instruction(model, sql, instruction):
-    rewritten = rewrite_with_model(model, sql, instruction)
-    rewritten_res = run_sql(rewritten)
-    comparison = compare_results(run_sql(sql), rewritten_res)
+    try:
+        raw_rewritten = rewrite_with_model(model, sql, instruction)
+        rewritten = clean_sql(raw_rewritten)
 
-    score = 0
-    if rewritten_res["success"]:
-        score += 1
-    if comparison["valid"]:
-        score += 2
+        rewritten_res = run_sql(rewritten)
+        original_res = run_sql(sql)
 
-    return {
-        "instruction": instruction,
-        "rewritten_sql": rewritten,
-        "result": rewritten_res,
-        "comparison": comparison,
-        "score": score
-    }
+        comparison = compare_results(original_res, rewritten_res)
+
+        score = 0
+        if rewritten_res["success"]:
+            score += 1
+        if comparison["valid"]:
+            score += 2
+
+        return {
+            "instruction": instruction,
+            "rewritten_sql": rewritten,
+            "result": rewritten_res,
+            "comparison": comparison,
+            "score": score
+        }
+    except Exception as e:
+        return {
+            "instruction": instruction,
+            "rewritten_sql": "",
+            "result": {"success": False, "error": str(e)},
+            "comparison": {"valid": False, "reason": "exception"},
+            "score": 0
+        }
 
 
 def find_best_instruction(model, sql):
-    results = []
-    for inst in INSTRUCTIONS:
-        r = test_instruction(model, sql, inst)
-        results.append(r)
-
-    # pick instruction with highest score
+    results = [test_instruction(model, sql, inst) for inst in INSTRUCTIONS]
     best = max(results, key=lambda x: x["score"])
-    
     return {
         "best_instruction": best,
         "all_results": results
