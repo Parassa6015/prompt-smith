@@ -1,8 +1,7 @@
 import google.generativeai as genai
-from utils.sql_executor import run_sql
 from services.cleaner import clean_sql_output
-from services.llm_service import rewrite_sql_pipeline
 from services.schema_service import get_schema_text
+
 
 
 def generate_sql_from_prompt(prompt: str):
@@ -28,7 +27,7 @@ Rules:
 Return ONLY the SQL query.
 """
 
-    response = genai.GenerativeModel("gemini-2.0-flash").generate_content(final_prompt)
+    response = genai.GenerativeModel("gemini-2.5-flash").generate_content(final_prompt)
     sql_raw = response.text
 
     return clean_sql_output(sql_raw)

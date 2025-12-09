@@ -85,14 +85,21 @@ You can expand this later, but this avoids import errors.
 def find_best_instruction(model: str, query: str):
     return {
         "instruction": (
-            "Rewrite the SQL ONLY for formatting and performance while keeping the query EXACTLY the same.\n"
-            "STRICT RULES:\n"
-            "- Do NOT change the logic.\n"
-            "- Do NOT add or remove columns.\n"
-            "- Do NOT add joins or window functions.\n"
-            "- Do NOT modify filters.\n"
-            "- Maintain all GROUP BY, HAVING, ORDER BY.\n"
-            "- Output ONLY the rewritten SQL. No explanation."
+            "Optimize this SQL query for performance while maintaining exact same results.\n\n"
+            "Allowed optimizations:\n"
+            "✅ Remove unnecessary subqueries\n"
+            "✅ Optimize JOIN order (smaller tables first)\n"
+            "✅ Convert NOT IN to NOT EXISTS or LEFT JOIN\n"
+            "✅ Push down WHERE filters before JOINs\n"
+            "✅ Remove redundant DISTINCT/GROUP BY\n"
+            "✅ Use indexes hints if beneficial\n"
+            "✅ Simplify complex CASE statements\n"
+            "✅ Better formatting & readability\n\n"
+            "DO NOT change:\n"
+            "❌ Column names or aliases\n"
+            "❌ Business logic or filters\n"
+            "❌ Final result set\n\n"
+            "Output ONLY optimized SQL, no explanation."
         ),
-        "reason": "Static safe instruction"
+        "reason": "Performance optimization"
     }

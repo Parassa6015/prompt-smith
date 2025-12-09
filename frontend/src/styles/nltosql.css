@@ -1,0 +1,207 @@
+/* ====== Page Layout ====== */
+
+.nlts-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: Inter, system-ui, sans-serif;
+  color: #111;
+}
+
+.nlts-title {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+
+/* ====== Input Section ====== */
+
+.nlts-card {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  padding: 24px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.nlts-textarea {
+  width: 100%;
+  height: 140px;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  outline: none;
+  background: white;
+}
+
+.nlts-textarea:focus {
+  border-color: #000;
+}
+
+
+/* ====== Buttons & Controls ====== */
+
+.nlts-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.nlts-select {
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+}
+
+.nlts-btn {
+  background: black;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+
+.nlts-btn:hover {
+  background: #333;
+}
+
+.nlts-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+
+/* ====== Section Titles ====== */
+
+.nlts-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+
+/* ====== Result Blocks ====== */
+
+.nlts-sql-block {
+  background: #1e1e1e;
+  border-radius: 10px;
+  padding: 16px;
+  color: white;
+  overflow-x: auto;
+  margin-bottom: 25px;
+}
+
+.nlts-error {
+  color: #d30000;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+
+/* ====== Table Styling ====== */
+
+.nlts-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.nlts-table th {
+  background: #f1f1f1;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.nlts-table td {
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.nlts-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+/* Full-screen center wrapper */
+.nlts-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 40px;
+}
+
+/* Internal page width */
+.nlts-page {
+  width: 100%;
+  max-width: 780px;
+  padding: 20px;
+}
+
+
+
+.main-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px;
+}
+
+
+/* Header row: title + new chat button */
+.nlts-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* New Chat button */
+.nlts-newchat-btn {
+  background: #000;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nlts-newchat-btn:hover {
+  background: #333;
+}
+
+/* Chat messages */
+.nlts-chat-message {
+  background: #fff;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.nlts-chat-user {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.nlts-chat-ai {
+  color: #444;
+  padding-left: 8px;
+}
