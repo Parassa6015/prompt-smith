@@ -3,7 +3,8 @@ import api from "../api/axiosAuth";
 import "../styles/nltosql.css";
 import UserMenu from "../components/UserMenu";
 import CryptoJS from "crypto-js";
-import ChatSidebar from "./ChatSidebar";
+import ChatSidebar from "./ChatSideBar";
+import ChatMessageViewer from "./ChatMessageViewer";
 
 import { Section, ResultsTable } from "../components/helperComponents";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -40,12 +41,11 @@ export default function NLtoSQL() {
       return obj;
     }
 
-  const sortedData = deepSort(data);
-  const jsonString = JSON.stringify(sortedData);
-
-  const computed = CryptoJS.HmacSHA256(jsonString, HMAC_SECRET).toString();
-  return computed === signature;
-}
+    const sortedData = deepSort(data);
+    const jsonString = JSON.stringify(sortedData);
+    const computed = CryptoJS.HmacSHA256(jsonString, HMAC_SECRET).toString();
+    return computed === signature;
+  }
 
   // Load chat list
   const loadChats = async () => {
@@ -65,10 +65,33 @@ export default function NLtoSQL() {
   useEffect(() => {
     if (!selectedChat) return;
 
-    api.get(`/chats/${selectedChat}/messages`)
-      .then(res => setMessages(res.data || []))
-      .catch(err => console.error("Failed to load messages", err));
+    api
+      .get(`/chats/${selectedChat}/messages`)
+      .then((res) => {
+        // backend returns { chat, messages }
+        console.log("messages api response", res.data);
+        setMessages(res.data?.messages || []);
+      })
+      .catch((err) => {
+        console.error("Failed to load messages", err);
+        setMessages([]);
+      });
   }, [selectedChat]);
+
+  // Auto-create a fresh chat on first load (optional, keeps core logic)
+  useEffect(() => {
+    const createFreshChat = async () => {
+      try {
+        const res = await api.post("/chats/create");
+        setSelectedChat(res.data.chat_id);
+        loadChats(); // refresh sidebar
+      } catch (err) {
+        console.error("Failed to auto-create chat", err);
+      }
+    };
+
+    createFreshChat();
+  }, []);
 
   // Submit NL → SQL
   const handleSubmit = async () => {
@@ -76,41 +99,49 @@ export default function NLtoSQL() {
     setError(null);
 
     try {
-    const res = await api.post("/nl-to-sql", {
+      const res = await api.post("/nl-to-sql", {
         prompt,
         model,
-        chat_id: selectedChat
-    });
+        chat_id: selectedChat,
+      });
 
-    // ---------- HMAC SECURITY CHECK ----------
-    if (!verifySignature(res.data.data, res.data.signature)) {
+      // ---------- HMAC SECURITY CHECK ----------
+      if (!verifySignature(res.data.data, res.data.signature)) {
         setError("Response integrity check failed!");
+        setLoading(false);
         return;
-    }
-    const payload = res.data.data;
-    // ------------------------------------------
+      }
+      const payload = res.data.data;
+      // ----------------------------------------
 
-    setGeneratedSql(payload.generated_sql || "");
-    setRewrittenSql(payload.final_sql || "");
-    setResult(payload.result || null);
+      setGeneratedSql(payload.generated_sql || "");
+      setRewrittenSql(payload.final_sql || "");
+      setResult(payload.result || null);
 
-    if (payload.chat_id && payload.chat_id !== selectedChat) {
+      // if backend created / switched to a new chat_id
+      if (payload.chat_id && payload.chat_id !== selectedChat) {
         setSelectedChat(payload.chat_id);
         loadChats();
-    }
+      }
 
-} catch (err) {
-    console.error(err);
-    setError("Request failed");
-}
+      // reload messages for current chat
+      if (selectedChat || payload.chat_id) {
+        const activeChatId = payload.chat_id || selectedChat;
+        const msgRes = await api.get(`/chats/${activeChatId}/messages`);
+        setMessages(msgRes.data?.messages || []);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Request failed");
+    }
 
     setLoading(false);
   };
 
   return (
     <div className="main-layout">
-      
       {/* LEFT SIDEBAR */}
+
       <ChatSidebar
         chats={chats}
         messages={messages}
@@ -127,6 +158,7 @@ export default function NLtoSQL() {
           setMessages([]);
         }}
       />
+      
 
       {/* MAIN CONTENT */}
       <div className="content-area">
@@ -152,25 +184,18 @@ export default function NLtoSQL() {
                 <option value="ollama">Ollama (sqlcoder)</option>
               </select>
 
-              <button className="nlts-btn" disabled={loading} onClick={handleSubmit}>
+              <button
+                className="nlts-btn"
+                disabled={loading}
+                onClick={handleSubmit}
+              >
                 {loading ? "Generating…" : "Run"}
               </button>
             </div>
 
             {error && <div className="nlts-error">⚠ {error}</div>}
           </div>
-
-          {/* RESULT BLOCKS */}
-          {/* {generatedSql && (
-            <Section title="Generated SQL">
-              <div className="nlts-sql-block">
-                <SyntaxHighlighter language="sql" style={vscDarkPlus}>
-                  {generatedSql}
-                </SyntaxHighlighter>
-              </div>
-            </Section>
-          )} */}
-
+          
           {rewrittenSql && (
             <Section title="Written SQL">
               <div className="nlts-sql-block">
@@ -186,6 +211,9 @@ export default function NLtoSQL() {
               <ResultsTable result={result} />
             </Section>
           )}
+          <Section title="Chat transcript">
+            <ChatMessageViewer messages={messages} />
+          </Section>
         </div>
       </div>
     </div>

@@ -109,6 +109,7 @@ def get_chat_messages(chat_id: int, user=Depends(require_user), db=Depends(get_d
         (chat_id,)
     )
     rows = cur.fetchall()
+    # print(rows)
 
     # Decrypt every message field
     for msg in rows:
@@ -132,6 +133,8 @@ def get_chat_messages(chat_id: int, user=Depends(require_user), db=Depends(get_d
                 msg["final_sql"] = decrypt_text(msg["final_sql"])
             except Exception:
                 pass
+        
+    print(rows)
 
     return {
         "chat": chat_row,

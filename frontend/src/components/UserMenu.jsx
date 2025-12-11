@@ -67,7 +67,7 @@ export default function UserMenu() {
       <div className="top-nav">
         <button onClick={() => navigate("/")}>Home</button>
         <button onClick={() => navigate("/rewrite")}>Rewrite</button>
-        <button onClick={() => navigate("/dashboard")}>NL→SQL</button>
+        <button onClick={async() => { try { await api.post("/chats/create"); navigate("/dashboard"); } catch(e) { console.error(e); } }}>NL→SQL</button>
         
         {/* Admin Dashboard button - only visible to admins */}
         {isAdmin && (
