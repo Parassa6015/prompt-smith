@@ -1,93 +1,169 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosAuth";
 import { useNavigate } from "react-router-dom";
+import UserMenu from "../components/UserMenu";
+import "../styles/loginsignup.css";
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [bio, setBio] = useState("");
   const [image, setImage] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   // Load profile on page load
   useEffect(() => {
-    api.get("/profile")
-      .then(res => {
+    api
+      .get("/profile")
+      .then((res) => {
         setProfile(res.data);
-        setName(res.data.name);
+        setName(res.data.name || "");
+        setBio(res.data.bio || "");
+        setImage(res.data.image || "");
       })
       .catch(() => {
         navigate("/login"); // if token invalid → send back to login
       });
-  }, []);
+  }, [navigate]);
 
   const handleUpdate = async () => {
-    try {
-      const body = {};
-      if (name) body.name = name;
-      if (password) body.password = password;
+  try {
+    const body = {
+      name,
+      bio,
+      image,
+    };
 
-      const res = await api.post("/profile/update", body);
-      setMessage("Profile updated successfully");
-      setPassword(""); // clear password after update
-      console.log(res.data);
-    } catch (err) {
-      setMessage("Update failed",err);
+    if (newPassword) {
+      body.current_password = currentPassword;
+      body.new_password = newPassword;
     }
-  };
 
-  if (!profile) return <div>Loading...</div>;
+    const res = await api.post("/profile/update", body);
+    setMessage("Profile updated successfully");
+    // Clear password fields
+    setCurrentPassword("");
+    setNewPassword("");
+
+  } catch (err) {
+    console.error(err);
+    setMessage(err.response?.data?.detail || "Update failed");
+  }
+};
+
+
+  if (!profile) {
+    return (
+      <div className="auth-root">
+        <div className="auth-card">
+          <p>Loading profile…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="profile-container">
-      <h1>Your Profile</h1>
-
-       <div className="avatar">
-        <span style={{ fontSize: "60px" }}>
-            {profile.avatar_emoji || "🙂"}
-        </span>
+    <div className="auth-root">
+      <div className="auth-top-nav">
+        <UserMenu />
       </div>
 
-      <div className="profile-box">
-        <p><strong>Email:</strong> {profile.email}</p>
-        <p><strong>Role:</strong> {profile.role}</p>
+      <div className="auth-card">
+        <h1 className="auth-title">Your Profile</h1>
+        <p className="auth-subtitle">
+          View and update your account details.
+        </p>
 
-        <label>Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 40, marginRight: 12 }}>😊</span>
+          {image && (
+            <img
+              src={image}
+              alt="Profile"
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "999px",
+                objectFit: "cover",
+                border: "1px solid #e5e7eb",
+              }}
+            />
+          )}
+        </div>
 
-        <label>New Password (optional)</label>
-        <input
-          type="password"
-          placeholder="Enter new password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <p style={{ marginBottom: 4 }}>
+          <strong>Email:</strong> {profile.email}
+        </p>
+        <p style={{ marginBottom: 16 }}>
+          <strong>Role:</strong> {profile.role}
+        </p>
 
-        <label>Bio</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Write something about yourself"
-        />
+        <div className="auth-form">
+          <div className="auth-field">
+            <label className="auth-label">Name</label>
+            <input
+              className="auth-input"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+            />
+          </div>
 
-        <label>Profile Image URL</label>
-          <input
-            type="text"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="Paste image link"
-        />
+          <div className="auth-field">
+            <label className="auth-label">Current Password</label>
+            <input
+              className="auth-input"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password"
+            />
+          </div>
 
+          <div className="auth-field">
+            <label className="auth-label">New Password (optional)</label>
+            <input
+              className="auth-input"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+            />
+          </div>
 
-        <button onClick={handleUpdate}>Update Profile</button>
+          <div className="auth-field">
+            <label className="auth-label">Bio</label>
+            <textarea
+              className="auth-input"
+              rows={3}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Write something about yourself"
+              style={{ resize: "vertical" }}
+            />
+          </div>
 
-        {message && <p className="status-msg">{message}</p>}
+          <div className="auth-field">
+            <label className="auth-label">Profile Image URL</label>
+            <input
+              className="auth-input"
+              type="text"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              placeholder="Paste image link"
+            />
+          </div>
+
+          <button type="button" className="auth-btn" onClick={handleUpdate}>
+            Update Profile
+          </button>
+
+          {message && <div className="auth-error">{message}</div>}
+        </div>
       </div>
     </div>
   );

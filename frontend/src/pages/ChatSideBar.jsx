@@ -26,7 +26,7 @@ export default function ChatSidebar({
   // Delete chat
   const deleteChat = async (chatId) => {
     try {
-      await api.delete(`/chats/${chatId}/delete`);
+      await api.delete(`/chats/${chatId}`);
 
       if (selectedChatId === chatId) {
         onSelectChat(null);
@@ -68,11 +68,10 @@ export default function ChatSidebar({
       <div className="chat-list">
         {chats?.map((chat) => (
           <div
-            key={chat.id}
-            className={`chat-item ${selectedChatId === chat.id ? "selected" : ""}`}
-            onClick={() => onSelectChat(chat.id)}
-          >
-            <div className="chat-info">
+              key={chat.id}
+              className={`chat-item ${selectedChatId === chat.id ? "selected" : ""}`}
+            >
+              <div className="chat-info" onClick={() => onSelectChat(chat.id)}>
               📄 Chat #{chat.id}
               <div className="chat-date">
                 {new Date(chat.updated_at).toLocaleString()}
@@ -80,27 +79,40 @@ export default function ChatSidebar({
             </div>
 
             {/* Three-dot menu */}
-            <div className="menu-wrapper" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="menu-wrapper"
+              onClick={(e) => e.stopPropagation()}  // prevents click bubbling
+            >
+              {/* Three-dot button */}
               <button
                 className="menu-btn"
-                onClick={() =>
-                  setMenuOpen(menuOpen === chat.id ? null : chat.id)
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(menuOpen === chat.id ? null : chat.id);
+                }}
               >
                 ⋮
               </button>
 
+              {/* Dropdown menu */}
               {menuOpen === chat.id && (
-                <div className="dropdown-menu">
+                <div
+                  className="dropdown-menu"
+                  onClick={(e) => e.stopPropagation()} // prevents closing when clicking inside
+                >
                   <button
                     className="dropdown-item delete-item"
-                    onClick={() => deleteChat(chat.id)}
+                    onClick={() => {
+                      deleteChat(chat.id);
+                      setMenuOpen(null);
+                    }}
                   >
                     🗑️ Delete chat
                   </button>
                 </div>
-              )}
-            </div>
+            )}
+          </div>
+
           </div>
         ))}
       </div>

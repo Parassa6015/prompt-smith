@@ -1,11 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../api/axiosAuth";
+import UserMenu from "../components/UserMenu";
+import "../styles/loginsignup.css";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -18,9 +22,8 @@ export default function Signup() {
         password,
       });
       console.log(res.data);
-
       alert("Signup successful! Redirecting to login...");
-      window.location.href = "/login";
+      navigate("/login");
     } catch (err) {
       console.error(err);
       setError("Signup failed. Email may already exist.");
@@ -28,38 +31,60 @@ export default function Signup() {
   };
 
   return (
-    <div className="signup-container">
-      <h2>Create Account</h2>
+    <div className="auth-root">
+      <UserMenu />
 
-      <form onSubmit={handleSignup}>
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+      <div className="auth-card">
+        <h1 className="auth-title">Create Account</h1>
+        <p className="auth-subtitle">
+          Start using PromptSmith in just a few seconds.
+        </p>
 
-        <input
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <form className="auth-form" onSubmit={handleSignup}>
+          <div>
+            <div className="auth-label">Full name</div>
+            <input
+              type="text"
+              className="auth-input"
+              placeholder="Ada Lovelace"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Create password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <div>
+            <div className="auth-label">Email</div>
+            <input
+              type="email"
+              className="auth-input"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-        <button type="submit">Sign Up</button>
-      </form>
+          <div>
+            <div className="auth-label">Password</div>
+            <input
+              type="password"
+              className="auth-input"
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-      {error && <p className="error">{error}</p>}
+          <button className="auth-btn" type="submit">
+            Sign up
+          </button>
+
+          {error && <div className="auth-error">{error}</div>}
+        </form>
+
+        <div className="auth-footer">
+          Already have an account? <a href="/login">Login</a>
+        </div>
+      </div>
     </div>
   );
 }

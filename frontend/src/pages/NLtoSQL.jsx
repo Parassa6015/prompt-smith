@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../api/axiosAuth";
 import "../styles/nltosql.css";
-
+import UserMenu from "../components/UserMenu";
+import CryptoJS from "crypto-js";
 import ChatSidebar from "./ChatSidebar";
 
 import { Section, ResultsTable } from "../components/helperComponents";
@@ -15,11 +16,36 @@ export default function NLtoSQL() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  const [generatedSql, setGeneratedSql] = useState("");
+  const [, setGeneratedSql] = useState("");
   const [rewrittenSql, setRewrittenSql] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  function verifySignature(data, signature) {
+    const HMAC_SECRET = "super-secret-hmac-key";
+
+    // Deep sort function to match Python json.dumps(sort_keys=True)
+    function deepSort(obj) {
+      if (Array.isArray(obj)) {
+        return obj.map(deepSort);
+      } else if (obj && typeof obj === "object") {
+        return Object.keys(obj)
+          .sort()
+          .reduce((acc, key) => {
+            acc[key] = deepSort(obj[key]);
+            return acc;
+          }, {});
+      }
+      return obj;
+    }
+
+  const sortedData = deepSort(data);
+  const jsonString = JSON.stringify(sortedData);
+
+  const computed = CryptoJS.HmacSHA256(jsonString, HMAC_SECRET).toString();
+  return computed === signature;
+}
 
   // Load chat list
   const loadChats = async () => {
@@ -50,35 +76,33 @@ export default function NLtoSQL() {
     setError(null);
 
     try {
-      const res = await api.post("/nl-to-sql", {
+    const res = await api.post("/nl-to-sql", {
         prompt,
         model,
         chat_id: selectedChat
-      });
+    });
 
-      if (res.data.error) {
-        setError(res.data.error);
-        setGeneratedSql("");
-        setRewrittenSql("");
-        setResult(null);
-        setLoading(false);
+    // ---------- HMAC SECURITY CHECK ----------
+    if (!verifySignature(res.data.data, res.data.signature)) {
+        setError("Response integrity check failed!");
         return;
-      }
-
-      setGeneratedSql(res.data.generated_sql || "");
-      setRewrittenSql(res.data.final_sql || "");
-      setResult(res.data.result || null);
-
-      // If backend created a new chat, switch to it
-      if (res.data.chat_id && res.data.chat_id !== selectedChat) {
-        setSelectedChat(res.data.chat_id);
-        loadChats();
-      }
-
-    } catch (err) {
-      console.error(err);
-      setError("Request failed");
     }
+    const payload = res.data.data;
+    // ------------------------------------------
+
+    setGeneratedSql(payload.generated_sql || "");
+    setRewrittenSql(payload.final_sql || "");
+    setResult(payload.result || null);
+
+    if (payload.chat_id && payload.chat_id !== selectedChat) {
+        setSelectedChat(payload.chat_id);
+        loadChats();
+    }
+
+} catch (err) {
+    console.error(err);
+    setError("Request failed");
+}
 
     setLoading(false);
   };
@@ -106,6 +130,7 @@ export default function NLtoSQL() {
 
       {/* MAIN CONTENT */}
       <div className="content-area">
+        <UserMenu />
         <div className="nlts-page">
           <h1 className="nlts-title">Natural Language → SQL</h1>
 
@@ -136,7 +161,7 @@ export default function NLtoSQL() {
           </div>
 
           {/* RESULT BLOCKS */}
-          {generatedSql && (
+          {/* {generatedSql && (
             <Section title="Generated SQL">
               <div className="nlts-sql-block">
                 <SyntaxHighlighter language="sql" style={vscDarkPlus}>
@@ -144,10 +169,10 @@ export default function NLtoSQL() {
                 </SyntaxHighlighter>
               </div>
             </Section>
-          )}
+          )} */}
 
           {rewrittenSql && (
-            <Section title="Rewritten SQL">
+            <Section title="Written SQL">
               <div className="nlts-sql-block">
                 <SyntaxHighlighter language="sql" style={vscDarkPlus}>
                   {rewrittenSql}
