@@ -34,8 +34,7 @@ EMOJI_LIST = [
 class SignupModel(BaseModel):
     name: str
     email: str
-    current_password: str | None = None
-    new_password: str | None = None
+    password: str
 
 class LoginModel(BaseModel):
     email: str
