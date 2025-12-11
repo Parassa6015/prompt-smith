@@ -42,8 +42,8 @@ export default function Home() {
       </section>
 
       <section className="home-footer-hints">
-        <div>Tip: Hover cards to preview actions.</div>
-        <div>New: NL → SQL now supports joins and aggregations.</div>
+        <div>© {new Date().getFullYear()} Noice AI. All rights reserved.</div>
+        <div>Privacy · Terms · Support</div>
       </section>
     </div>
   );

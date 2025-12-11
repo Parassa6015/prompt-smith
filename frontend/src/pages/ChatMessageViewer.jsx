@@ -2,59 +2,77 @@ import React from "react";
 
 function CodeBlock({ title, code }) {
   if (!code) return null;
-
   return (
-    <div style={{
-      background: "#1e1e1e",
-      padding: "15px",
-      borderRadius: "8px",
-      color: "white",
-      marginBottom: "15px",
-      fontFamily: "monospace",
-      whiteSpace: "pre-wrap"
-    }}>
-      <div style={{ marginBottom: "6px", fontWeight: 600 }}>
-        {title} 
-        <button 
-          onClick={() => navigator.clipboard.writeText(code)}
-          style={{ marginLeft: "10px", cursor: "pointer" }}
-        >
-          📋
-        </button>
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+        {title}
       </div>
-      <code>{code}</code>
+      <pre
+        style={{
+          background: "#111827",
+          color: "white",
+          padding: 10,
+          borderRadius: 8,
+          fontFamily: "monospace",
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {code}
+      </pre>
     </div>
   );
 }
 
 export default function ChatMessageViewer({ messages }) {
-  if (!messages || messages.length === 0)
-    return <div style={{ padding: "20px" }}>No messages yet.</div>;
+  if (!messages || messages.length === 0) {
+    return <div style={{ fontSize: 13, color: "#6b7280" }}>No messages yet.</div>;
+  }
 
   return (
-    <div style={{ padding: "20px", flex: 1, overflowY: "auto" }}>
-      {messages.map(msg => (
-        <div key={msg.id} style={{ marginBottom: "30px" }}>
-          <div style={{ fontWeight: 600, marginBottom: "6px" }}>
-            🧑‍💻 User:
-          </div>
-          <div style={{ padding: "10px", background: "#f8f8f8", borderRadius: "8px" }}>
+    <div
+      style={{
+        maxHeight: 320,
+        overflowY: "auto",
+        paddingRight: 4,
+      }}
+    >
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
+          style={{
+            marginBottom: 20,
+            paddingBottom: 16,
+            borderBottom: "1px solid #e5e7eb",
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>You</div>
+          <div
+            style={{
+              padding: 10,
+              borderRadius: 8,
+              background: "#f3f4f6",
+              marginBottom: 8,
+            }}
+          >
             {msg.user_message}
           </div>
 
-          <CodeBlock title="Generated SQL" code={msg.raw_sql} />
-          <CodeBlock title="Rewritten SQL" code={msg.final_sql} />
-
-          <div style={{ fontWeight: 600, marginTop: "10px" }}>🤖 AI Result:</div>
-          <pre style={{
-            background: "#fafafa",
-            padding: "10px",
-            borderRadius: "8px",
-            whiteSpace: "pre-wrap",
-            overflowX: "auto"
-          }}>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+            Model
+          </div>
+          <div
+            style={{
+              padding: 10,
+              borderRadius: 8,
+              background: "#f9fafb",
+              border: "1px solid #e5e7eb",
+            }}
+          >
             {msg.ai_response}
-          </pre>
+          </div>
+
+          <CodeBlock title="Draft SQL" code={msg.raw_sql} />
+          <CodeBlock title="Final SQL" code={msg.final_sql} />
         </div>
       ))}
     </div>
